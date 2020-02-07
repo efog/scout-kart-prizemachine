@@ -1,4 +1,152 @@
 (function () {
+    // t = time, d = duration, b = start state, c = end state
+    Math.linearTween = function (t, b, c, d) {
+        return c * t / d + b;
+    };
+
+    Math.easeInQuad = function (t, b, c, d) {
+        const td = t / d;
+        return c * td * td + b;
+    };
+
+    Math.easeOutQuad = function (t, b, c, d) {
+        const td = t / d;
+        return -c * td * (td - 2) + b;
+    };
+
+    Math.easeInOutQuad = function (t, b, c, d) {
+        let td2 = t / d / 2;
+        if (td2 < 1) {
+            return c / 2 * td2 * td2 + b;
+        }
+        td2--;
+        return -c / 2 * (td2 * (td2 - 2) - 1) + b;
+    };
+
+    Math.easeInCubic = function (t, b, c, d) {
+        const td = t / d;
+        return c * td * td * td + b;
+    };
+
+    Math.easeOutCubic = function (t, b, c, d) {
+        let td = t / d;
+        td--;
+        return c * (td * td * td + 1) + b;
+    };
+
+    Math.easeInOutCubic = function (t, b, c, d) {
+        let td2 = t / d / 2;
+        if (td2 < 1) {
+            return c / 2 * td2 * td2 * td2 + b;
+        }
+        td2 -= 2;
+        return c / 2 * (td2 * td2 * td2 + 2) + b;
+    };
+
+    Math.easeInQuart = function (t, b, c, d) {
+        const td = t / d;
+        return c * td * td * td * td + b;
+    };
+
+
+    Math.easeOutQuart = function (t, b, c, d) {
+        let td = t / d;
+        td--;
+        return -c * (td * td * td * td - 1) + b;
+    };
+
+
+    Math.easeInOutQuart = function (t, b, c, d) {
+        let td2 = t / d / 2;
+        if (td2 < 1) {
+            return c / 2 * td2 * td2 * td2 * td2 + b;
+        }
+        td2 -= 2;
+        return -c / 2 * (td2 * td2 * td2 * td2 - 2) + b;
+    };
+
+    Math.easeInQuint = function (t, b, c, d) {
+        const td = t / d;
+        return c * td * td * td * td * td + b;
+    };
+
+    Math.easeOutQuint = function (t, b, c, d) {
+        let td = t / d;
+        td--;
+        return c * (td * td * td * td * td + 1) + b;
+    };
+
+    Math.easeInOutQuint = function (t, b, c, d) {
+        let td2 = t / d / 2;
+        if (td2 < 1) {
+            return c / 2 * td2 * td2 * td2 * td2 * td2 + b;
+        }
+        td2 -= 2;
+        return c / 2 * (td2 * td2 * td2 * td2 * td2 + 2) + b;
+    };
+
+    Math.easeOutSine = function (t, b, c, d) {
+        return c * Math.sin(t / d * (Math.PI / 2)) + b;
+    };
+
+    Math.easeInOutSine = function (t, b, c, d) {
+        return -c / 2 * (Math.cos(Math.PI * t / d) - 1) + b;
+    };
+
+    Math.easeInExpo = function (t, b, c, d) {
+        return c * Math.pow(2, 10 * (t / d - 1)) + b;
+    };
+
+    Math.easeOutExpo = function (t, b, c, d) {
+        return c * (-Math.pow(2, -10 * t / d) + 1) + b;
+    };
+
+    Math.easeInOutExpo = function (t, b, c, d) {
+        let td2 = t / d / 2;
+        if (td2 < 1) {
+            return c / 2 * Math.pow(2, 10 * (td2 - 1)) + b;
+        }
+        td2--;
+        return c / 2 * (-Math.pow(2, -10 * td2) + 2) + b;
+    };
+
+    Math.easeInCirc = function (t, b, c, d) {
+        const td = t / d;
+        return -c * (Math.sqrt(1 - td * td) - 1) + b;
+    };
+
+    Math.easeOutCirc = function (t, b, c, d) {
+        let td = t / d;
+        td--;
+        return c * Math.sqrt(1 - td * td) + b;
+    };
+
+    Math.easeInOutCirc = function (t, b, c, d) {
+        let td2 = t / d / 2;
+        if (td2 < 1) {
+            return -c / 2 * (Math.sqrt(1 - td2 * td2) - 1) + b;
+        }
+        td2 -= 2;
+        return c / 2 * (Math.sqrt(1 - td2 * td2) + 1) + b;
+    };
+
+    var animate = function (spriteState) {
+        if (!spriteState.animations) { return; }
+        var stateUpdate = {};
+        for (let index = 0; index < spriteState.animations.length; index++) {
+            const animation = spriteState.animations[index];
+            if (spriteState.elapsed >= animation.startTime + animation.duration) { continue; }
+            var animationFunction = Math[animation.easingFunction];
+            // t = time, d = duration, b = start state, c = end state
+            var t = spriteState.elapsed - animation.startTime;
+            var d = animation.duration;
+            var b = animation.startValue;
+            var c = animation.endValue - animation.startValue;
+            var res = animationFunction(t, b, c, d);
+            stateUpdate[animation.targetProps] = res;
+        }
+        return Object.assign({}, stateUpdate);
+    }
 
     class PiranhaPlantSheet {
         constructor() {
@@ -32,6 +180,9 @@
             this._timePerFrame = 1000 / this._fps;
             this._elapsed = 0;
             this._currentFrame = 0;
+        }
+        update(state) {
+            this._state = Object.assign({}, state);
         }
         draw(context, elapsed) {
             this._currentFrame = Math.floor((this._elapsed / this._timePerFrame) % this._frameCount);
@@ -87,6 +238,9 @@
             this._elapsed = 0;
             this._currentFrame = 0;
         }
+        update(state) {
+            this._state = Object.assign({}, state);
+        }
         draw(context, elapsed) {
             this._currentFrame = Math.floor((this._elapsed / this._timePerFrame) % this._frameCount);
             if (this._image) {
@@ -113,6 +267,7 @@
 
     class SurprizeBlock {
         constructor() {
+            this._state = { "elapsed": 0 };
             var imageLoader = new Image();
             imageLoader.addEventListener("load", () => {
                 var buffer = document.createElement("canvas");
@@ -132,37 +287,112 @@
                 bufferContext.putImageData(imageData, 0, 0);
                 var newImage = document.createElement("img");
                 newImage.src = buffer.toDataURL("image/png");
-                this._image = newImage;
+                var colCount = 16;
+                this._state = Object.assign(this._state, {
+                    "image": newImage,
+                    "spriteWidth": imageLoader.width / colCount,
+                    "spriteHeight": Math.floor(imageLoader.height / 3),
+                    "colCount": colCount
+                })
             });
             imageLoader.src = "./images/surprizeblock.png";
-            this._frameCount = 16;
-            this._fps = 40;
-            this._timePerFrame = 1000 / this._fps;
-            this._elapsed = 0;
-            this._currentFrame = 0;
+            this._state = Object.assign(this._state, {
+                "frameCount": 16,
+                "fps": 40,
+                "timePerFrame": 1000 / 40,
+                "elapsed": 0,
+                "currentFrame": 0
+            })
         }
-        draw(context, elapsed) {
-            this._currentFrame = Math.floor((this._elapsed / this._timePerFrame) % this._frameCount);
-            if (this._image) {
-                var sizeRatio = Math.max((context.canvas.height) / this._image.height, 1);
-                var colCount = 16;
-                var spriteWidth = this._image.width / colCount;
-                var spriteHeight = Math.floor(this._image.height / 3);
-                var row = Math.floor(this._currentFrame / colCount);
-                var col = (this._currentFrame - (row * colCount));
-                var x = col * spriteWidth;
-                var y = row * spriteHeight;
-                var clipWidth = spriteWidth;
-                var clipHeight = spriteHeight;
+        update(update, elapsed) {
+            if (this._state.image) {
+
+                var row = Math.floor(this._state.currentFrame / this._state.colCount);
+                var col = (this._state.currentFrame - (row * this._state.colCount));
                 var centerX = context.canvas.width / 2;
                 var centerY = context.canvas.height / 2;
-                var posX = centerX - (spriteWidth * sizeRatio) / 2;
-                var posY = centerY - (spriteHeight * sizeRatio) / 2;
+
+                var updateState = {
+                    "currentFrame": Math.floor((this._state.elapsed / this._state.timePerFrame) % this._state.frameCount),
+                    "originalSizeRatio": Math.max((context.canvas.height) / this._state.image.height, 1),
+                    "sizeRatio": this._state.sizeRatio || Math.max((context.canvas.height) / this._state.image.height, 1),
+                    "spriteX": col * this._state.spriteWidth,
+                    "spriteY": row * this._state.spriteHeight,
+                    "clipWidth": this._state.spriteWidth,
+                    "clipHeight": this._state.spriteHeight,
+                    "posX": this._state.posX || centerX - (this._state.spriteWidth * this._state.sizeRatio) / 2,
+                    "posY": this._state.posY || centerY - (this._state.spriteHeight * this._state.sizeRatio) / 2
+                }
+                // to mouse down
+                if (!this._state.mousedown && update.mousedown) {
+                    console.log("mousedown");
+                    var sizeAnimation = {
+                        "startTime": this._state.elapsed,
+                        "duration": 125,
+                        "targetProps": "sizeRatio",
+                        "startValue": this._state.sizeRatio,
+                        "endValue": this._state.originalSizeRatio * 0.8,
+                        "easingFunction": "linearTween"
+                    };
+                    var posXAnimation = {
+                        "startTime": this._state.elapsed,
+                        "duration": 125,
+                        "targetProps": "posX",
+                        "startValue": this._state.posX,
+                        "endValue": centerX - (this._state.spriteWidth * this._state.originalSizeRatio * 0.8) / 2,
+                        "easingFunction": "linearTween"
+                    };
+                    var posYAnimation = {
+                        "startTime": this._state.elapsed,
+                        "duration": 125,
+                        "targetProps": "posY",
+                        "startValue": this._state.posY,
+                        "endValue": centerY - (this._state.spriteHeight * this._state.originalSizeRatio * 0.8) / 2,
+                        "easingFunction": "linearTween"
+                    };
+                    updateState.animations = [sizeAnimation, posXAnimation, posYAnimation];
+                }
+                // from mouse down
+                if (this._state.mousedown && update.mouseup) {
+                    console.log("mouseup");
+                    var sizeAnimation = {
+                        "startTime": this._state.elapsed,
+                        "duration": 125,
+                        "targetProps": "sizeRatio",
+                        "startValue": this._state.sizeRatio,
+                        "endValue": this._state.originalSizeRatio,
+                        "easingFunction": "linearTween"
+                    };
+                    var posXAnimation = {
+                        "startTime": this._state.elapsed,
+                        "duration": 125,
+                        "targetProps": "posX",
+                        "startValue": this._state.posX,
+                        "endValue": centerX - (this._state.spriteWidth * this._state.originalSizeRatio) / 2,
+                        "easingFunction": "linearTween"
+                    };
+                    var posYAnimation = {
+                        "startTime": this._state.elapsed,
+                        "duration": 125,
+                        "targetProps": "posY",
+                        "startValue": this._state.posY,
+                        "endValue": centerY - (this._state.spriteHeight * this._state.originalSizeRatio) / 2,
+                        "easingFunction": "linearTween"
+                    };
+                    updateState.animations = [sizeAnimation, posXAnimation, posYAnimation];
+                }
+            }
+            var animationUpdates = animate(this._state, elapsed);
+            this._state = Object.assign({}, this._state, updateState, animationUpdates ? animationUpdates : {}, update);
+            this._state.elapsed += elapsed;
+        }
+        draw(context) {
+            if (this._state.image) {
                 context.save();
-                context.drawImage(this._image, x, y, clipWidth, clipHeight, posX, posY, Math.floor(spriteWidth * sizeRatio), Math.floor(spriteHeight * sizeRatio));
+                // console.log(`${this._state.clipWidth}, ${this._state.clipHeight}, ${this._state.posX}, ${this._state.posY}, ${Math.floor(this._state.spriteWidth * this._state.sizeRatio)}, ${Math.floor(this._state.spriteHeight * this._state.sizeRatio)}`);
+                context.drawImage(this._state.image, this._state.spriteX, this._state.spriteY, this._state.clipWidth, this._state.clipHeight, this._state.posX, this._state.posY, Math.floor(this._state.spriteWidth * this._state.sizeRatio), Math.floor(this._state.spriteHeight * this._state.sizeRatio));
                 context.restore();
             }
-            this._elapsed += elapsed;
         }
     }
 
@@ -197,6 +427,7 @@
         }
     }
 
+    var state = {};
     var canvas = document.getElementById("drawboard");
     var context = canvas.getContext("2d");
     var bufferCanvas = document.createElement("canvas");
@@ -206,15 +437,15 @@
     bufferCanvasCtx.canvas.height = context.canvas.height;
 
     var currentFrame = 0;
+    var elapsed = 0;
     var lastTime = new Date().getTime();
     var currentTime = 0;
 
     var background = new Background();
 
-    var draw = function () {
+    var draw = function (elapsed) {
         currentTime = new Date().getTime();
-        var elapsed = currentTime - lastTime;
-        var fps = 1000 / elapsed;
+        elapsed = currentTime - lastTime;
         currentFrame++;
         context.save();
         background.draw(bufferCanvasCtx, elapsed);
@@ -225,17 +456,30 @@
 
         context.drawImage(bufferCanvas, 0, 0, bufferCanvas.width, bufferCanvas.height);
         context.restore();
-        lastTime = currentTime;
     }
     var update = function () {
-        draw(currentFrame)
+        currentTime = new Date().getTime();
+        elapsed = currentTime - lastTime;
+        koopaSpriteSheet.update(state);
+        piranhaPlantSheet.update(state);
+        surprizeblocks.update(state, elapsed);
+        draw(currentFrame, elapsed)
         window.requestAnimationFrame(update);
+        lastTime = currentTime;
     }
     var resize = function () {
         bufferCanvas.width = canvas.width = window.innerWidth;
         bufferCanvas.height = canvas.height = window.innerHeight;
     }
+    function handleMouseDown(evt) {
+        state = Object.assign({}, state, { "mousedown": evt, "mouseup": null });
+    }
+    function handleMouseUp(evt) {
+        state = Object.assign({}, state, { "mousedown": null, "mouseup": evt });
+    }
     window.addEventListener("resize", resize, false);
+    window.addEventListener("mousedown", handleMouseDown, false);
+    window.addEventListener("mouseup", handleMouseUp, false);
     resize();
     update();
 })();
